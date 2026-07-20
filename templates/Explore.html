@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Explore Temples | Temple Explorer India</title>
+
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Leaflet -->
+    <link rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="style.css">
+
+</head>
+
+<body class="bg-orange-50">
+
+<!-- ================= NAVBAR ================= -->
+
+<nav class="bg-white shadow-lg">
+
+    <div class="max-w-7xl mx-auto flex justify-between items-center p-5">
+
+        <h1 class="text-3xl font-bold text-orange-700">
+
+            🛕 Temple Explorer India
+
+        </h1>
+
+        <div class="space-x-8 font-semibold">
+
+            <a href="{% url 'home' %}" class="hover:text-orange-600">
+
+                Home
+
+            </a>
+
+            <a href="{% url 'explore' %}"
+               class="text-orange-600 font-bold">
+
+                Explore
+
+            </a>
+
+            <a href="{% url 'add_temple' %}"
+               class="hover:text-orange-600">
+
+                Add Temple
+
+            </a>
+            
+            <a href="{% url 'favorites' %}"
+   class="hover:text-orange-600">
+   ❤️ Favorites
+</a>
+
+            <a href="{% url 'about' %}"
+               class="hover:text-orange-600">
+
+                About
+
+            </a>
+
+        </div>
+
+    </div>
+
+</nav>
+
+<!-- ================= TITLE ================= -->
+
+<section class="py-10">
+
+<div class="max-w-7xl mx-auto px-6">
+
+<h2 class="text-5xl font-bold text-center text-orange-700">
+
+Explore Temples
+
+</h2>
+
+<p class="text-center text-gray-600 mt-4">
+
+Search temples and discover their location across India.
+
+</p>
+
+<!-- SEARCH -->
+
+<div class="max-w-3xl mx-auto mt-10">
+
+<input
+id="search"
+type="text"
+placeholder="🔍 Search Temple..."
+onkeyup="filterTemples()"
+class="w-full p-4 rounded-xl border-2 border-orange-300 shadow-lg focus:outline-none focus:ring-4 focus:ring-orange-300 text-lg">
+
+</div>
+
+<!-- FILTER BUTTONS -->
+
+<div class="flex flex-wrap justify-center gap-4 mt-8">
+
+    <button
+        onclick="showAllTemples()"
+        class="bg-gray-700 text-white px-6 py-3 rounded-full hover:bg-gray-800">
+
+        🛕 All
+
+    </button>
+
+    <button
+        onclick="filterByDeity('shiva')"
+        class="bg-blue-600 text-white px-6 py-3 rounded-full hover:bg-blue-700">
+
+        🔱 Shiva
+
+    </button>
+
+    <button
+        onclick="filterByDeity('vishnu')"
+        class="bg-yellow-500 text-white px-6 py-3 rounded-full hover:bg-yellow-600">
+
+        🐚 Vishnu
+
+    </button>
+
+    <button
+        onclick="filterByDeity('devi')"
+        class="bg-red-600 text-white px-6 py-3 rounded-full hover:bg-red-700">
+
+        🌺 Devi
+
+    </button>
+
+    <button
+        onclick="filterByDeity('3Brothers')"
+        class="bg-green-600 text-white px-6 py-3 rounded-full hover:bg-green-700">
+
+        🦚 3Brothers
+
+    </button>
+
+    <button
+        onclick="filterByDeity('others')"
+        class="bg-purple-600 text-white px-6 py-3 rounded-full hover:bg-purple-700">
+
+        🛕 Others
+
+    </button>
+
+</div>
+<!-- ================= MAIN LAYOUT ================= -->
+
+<div class="max-w-7xl mx-auto mt-10">
+
+    <div class="grid lg:grid-cols-3 gap-6">
+
+        <!-- LEFT PANEL -->
+
+        <div class="bg-white rounded-2xl shadow-xl p-5 h-[650px]">
+
+            <div class="flex justify-between items-center mb-4">
+
+                <h3 class="text-2xl font-bold text-orange-700">
+
+                    Temple List
+
+                </h3>
+
+                <button
+                    onclick="teleport()"
+                    class="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700">
+
+                    🎲 Random
+
+                </button>
+
+            </div>
+
+            <div
+                id="listItems"
+                class="space-y-5 overflow-y-auto h-[560px]">
+
+            </div>
+
+        </div>
+
+        <!-- RIGHT PANEL -->
+
+        <div class="lg:col-span-2">
+
+            <div
+                id="map"
+                class="rounded-2xl shadow-xl h-[650px]">
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+</div>
+
+</section>
+<!-- ================= JAVASCRIPT ================= -->
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+
+// ================= MAP =================
+
+let map = L.map('map').setView([20.5937, 78.9629], 5);
+
+L.tileLayer(
+    'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    {
+        attribution: '© OpenStreetMap'
+    }
+).addTo(map);
+
+let markers = L.layerGroup().addTo(map);
+
+let allTemples = [];
+
+// ================= DEITY CATEGORIES =================
+
+const shivaDeities = [
+    "shiva",
+    "mahadev",
+    "mallikarjuna",
+    "lingeswara",
+    "mahakaleshwar",
+    "kedarnath",
+    "somnath",
+    "viswanath"
+];
+
+const vishnuDeities = [
+    "vishnu",
+    "venkateswara",
+    "balaji",
+    "narayana",
+    "rama",
+    "krishna",
+    "narasimha",
+    "jagannath",
+    "ranganatha"
+];
+
+const goddessDeities = [
+    "devi",
+    "goddess",
+    "shakti",
+    "durga",
+    "amman",
+    "lakshmi",
+    "parvati",
+    "padmavathi",
+    "padmavati",
+    "kanaka durga",
+    "meenakshi",
+    "kamakshi",
+    "visalakshi",
+    "bhadrakali",
+    "saraswati"
+];
+
+const brothersDeities = [
+    "murugan",
+    "muruga",
+    "subramanyam",
+    "karthikeya",
+    "skanda",
+    "ganesh",
+    "ganapati",
+    "vinayaka",
+    "ayyappa",
+    "ayyapa"
+];
+
+// ================= HELPER =================
+
+function hasAnyDeity(deity, list){
+    return list.some(item => deity.includes(item));
+}
+
+// ================= FETCH DATA =================
+
+async function fetchTemples(){
+
+    try{
+
+        const response = await fetch("/api/temples/");
+
+        allTemples = await response.json();
+
+        displayTemples(allTemples);
+
+    }
+
+    catch(error){
+
+        console.error(error);
+
+        alert("Unable to load temples.");
+
+    }
+
+}
+
+// ================= DISPLAY =================
+
+function displayTemples(data){
+
+    markers.clearLayers();
+
+    const list = document.getElementById("listItems");
+
+    list.innerHTML = "";
+
+    data.forEach(t=>{
+
+        L.marker([t.latitude, t.longitude])
+            .addTo(markers)
+            .bindPopup(`
+                <b>${t.name}</b><br>
+                📍 ${t.city}
+            `);
+
+        list.innerHTML += `
+
+<div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition duration-300">
+
+<img
+src="${t.image_url}"
+onclick="flyToTemple(${t.latitude}, ${t.longitude}, '${t.name}', '${t.city}')"
+class="w-full h-40 object-cover cursor-pointer hover:scale-105 transition duration-300"
+title="Click to locate on map">
+
+<div class="p-4">
+
+<h3 class="text-lg font-bold text-orange-700">
+🛕 ${t.name}
+</h3>
+
+<p class="text-gray-600 mt-2">
+📍 ${t.city}
+</p>
+
+<p class="text-gray-700 mt-2">
+🙏 ${t.deity}
+</p>
+
+<button
+onclick="openTemple(${t.id})"
+class="mt-4 w-full bg-orange-600 hover:bg-orange-700 text-white py-2 rounded-lg">
+
+View Details →
+
+</button>
+
+</div>
+
+</div>
+
+`;
+
+    });
+
+}
+
+// ================= SEARCH =================
+
+function filterTemples(){
+
+    const q = document.getElementById("search").value.toLowerCase();
+
+    const filtered = allTemples.filter(t =>
+
+        t.name.toLowerCase().includes(q) ||
+
+        (t.city || "").toLowerCase().includes(q) ||
+
+        (t.deity || "").toLowerCase().includes(q)
+
+    );
+
+    displayTemples(filtered);
+
+}
+
+// ================= SHOW ALL =================
+
+function showAllTemples(){
+
+    displayTemples(allTemples);
+
+}
+
+// ================= FILTER BY DEITY =================
+
+function filterByDeity(type){
+
+    let filtered = [];
+
+    if(type === "shiva"){
+
+        filtered = allTemples.filter(t =>
+            hasAnyDeity(
+                (t.deity || "").toLowerCase(),
+                shivaDeities
+            )
+        );
+
+    }
+
+    else if(type === "vishnu"){
+
+        filtered = allTemples.filter(t =>
+            hasAnyDeity(
+                (t.deity || "").toLowerCase(),
+                vishnuDeities
+            )
+        );
+
+    }
+
+    else if(type === "devi"){
+
+        filtered = allTemples.filter(t =>
+            hasAnyDeity(
+                (t.deity || "").toLowerCase(),
+                goddessDeities
+            )
+        );
+
+    }
+
+    else if(type === "3Brothers"){
+
+        filtered = allTemples.filter(t =>
+            hasAnyDeity(
+                (t.deity || "").toLowerCase(),
+                brothersDeities
+            )
+        );
+
+    }
+
+    else if(type === "others"){
+
+        filtered = allTemples.filter(t=>{
+
+            let d = (t.deity || "").toLowerCase();
+
+            return !(
+
+                hasAnyDeity(d, shivaDeities) ||
+
+                hasAnyDeity(d, vishnuDeities) ||
+
+                hasAnyDeity(d, goddessDeities) ||
+
+                hasAnyDeity(d, brothersDeities)
+
+            );
+
+        });
+
+    }
+
+    displayTemples(filtered);
+
+}
+
+// ================= FLY TO TEMPLE =================
+
+function flyToTemple(latitude, longitude, name, city){
+
+    map.flyTo([latitude, longitude], 15, {
+
+        duration: 2
+
+    });
+
+    L.popup()
+        .setLatLng([latitude, longitude])
+        .setContent(`
+            <b>🛕 ${name}</b><br>
+            📍 ${city}
+        `)
+        .openOn(map);
+
+}
+
+// ================= RANDOM TEMPLE =================
+
+function teleport(){
+
+    const t = allTemples[
+        Math.floor(Math.random() * allTemples.length)
+    ];
+
+    if(!t) return;
+
+    flyToTemple(
+        t.latitude,
+        t.longitude,
+        t.name,
+        t.city
+    );
+
+}
+
+// ================= OPEN DETAILS =================
+
+function openTemple(id){
+
+    window.location.href = `/temple/${id}/`;
+
+}
+
+// ================= START =================
+
+fetchTemples();
+
+</script>
+</body>
+</html>

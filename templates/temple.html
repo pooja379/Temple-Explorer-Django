@@ -1,0 +1,332 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>{{ temple.name }} | Temple Explorer India</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+</head>
+
+<body class="bg-orange-50">
+
+<!-- ================= NAVBAR ================= -->
+
+<nav class="bg-white shadow-lg">
+
+    <div class="max-w-7xl mx-auto flex justify-between items-center p-5">
+
+        <h1 class="text-3xl font-bold text-orange-700">
+
+            🛕 Temple Explorer India
+
+        </h1>
+
+        <div class="space-x-8 font-semibold">
+
+            <a href="{% url 'home' %}" class="hover:text-orange-600">
+                Home
+            </a>
+
+            <a href="{% url 'explore' %}" class="hover:text-orange-600">
+                Explore
+            </a>
+
+            <a href="{% url 'add_temple' %}" class="hover:text-orange-600">
+                Add Temple
+            </a>
+
+            <a href="{% url 'favorites' %}" class="hover:text-orange-600">
+                ❤️ Favorites
+            </a>
+
+            <a href="{% url 'about' %}" class="hover:text-orange-600">
+                About
+            </a>
+
+        </div>
+
+    </div>
+
+</nav>
+
+<!-- ================= IMAGE ================= -->
+
+<section class="max-w-6xl mx-auto mt-10">
+
+    <img
+        src="{{ temple.image_url }}"
+        class="w-full h-[500px] object-cover rounded-2xl shadow-xl">
+
+</section>
+
+<!-- ================= DETAILS ================= -->
+
+<section class="max-w-6xl mx-auto mt-10 bg-white rounded-2xl shadow-xl p-10">
+
+    <h1 class="text-5xl font-bold text-orange-700">
+
+        {{ temple.name }}
+
+    </h1>
+    <div class="mt-4">
+
+{% if rating_data.total_reviews %}
+
+<p class="text-2xl font-semibold text-yellow-500">
+
+⭐ {{ rating_data.average_rating|floatformat:1 }} / 5
+
+</p>
+
+<p class="text-gray-600 mt-1">
+
+Based on {{ rating_data.total_reviews }} Review{{ rating_data.total_reviews|pluralize }}
+
+</p>
+
+{% else %}
+
+<p class="text-gray-500">
+
+No ratings yet.
+
+</p>
+
+{% endif %}
+
+</div>
+
+    <div class="grid md:grid-cols-2 gap-6 mt-8">
+
+        <div>
+
+            <p class="text-xl">
+                📍 <b>City:</b> {{ temple.city }}
+            </p>
+
+            <p class="text-xl mt-4">
+                🙏 <b>Deity:</b> {{ temple.deity }}
+            </p>
+
+            <p class="text-xl mt-4">
+                ⭐ <b>Famous For:</b> {{ temple.famous_for }}
+            </p>
+            {% if user.is_authenticated %}
+
+<a href="{% url 'add_favorite' temple.id %}"
+   class="inline-block mt-6 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl font-bold shadow-lg transition">
+
+    ❤️ Add to Favorites
+
+</a>
+
+{% else %}
+
+<a href="{% url 'login' %}"
+   class="inline-block mt-6 bg-orange-600 hover:bg-orange-700 text-white px-6 py-3 rounded-xl font-bold shadow-lg transition">
+
+    Login to Add Favorites
+
+</a>
+
+{% endif %}
+
+        </div>
+
+        <div>
+
+            <p class="text-xl">
+                🌍 <b>Latitude:</b> {{ temple.latitude }}
+            </p>
+
+            <p class="text-xl mt-4">
+                🌍 <b>Longitude:</b> {{ temple.longitude }}
+            </p>
+ <div class="mt-6">
+
+    <a
+        href="https://www.google.com/maps?q={{ temple.latitude }},{{ temple.longitude }}"
+        target="_blank"
+        class="inline-block bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl font-bold shadow-lg transition">
+
+        📍 Get Directions
+
+    </a>
+
+</div>
+        </div>
+
+    </div>
+
+</section>
+
+<!-- ================= INFORMATION ================= -->
+
+<section class="max-w-6xl mx-auto my-10 grid md:grid-cols-2 gap-8">
+
+    <div class="bg-white rounded-xl shadow-lg p-8">
+
+        <h2 class="text-2xl font-bold text-orange-700 mb-4">
+            📜 History
+        </h2>
+
+        <p>{{ temple.history }}</p>
+
+    </div>
+
+    <div class="bg-white rounded-xl shadow-lg p-8">
+
+        <h2 class="text-2xl font-bold text-orange-700 mb-4">
+            🕒 Timings
+        </h2>
+
+        <p>{{ temple.timings }}</p>
+
+    </div>
+
+    <div class="bg-white rounded-xl shadow-lg p-8">
+
+        <h2 class="text-2xl font-bold text-orange-700 mb-4">
+            🎉 Festivals
+        </h2>
+
+        <p>{{ temple.festivals }}</p>
+
+    </div>
+
+    <div class="bg-white rounded-xl shadow-lg p-8">
+
+        <h2 class="text-2xl font-bold text-orange-700 mb-4">
+            🏛️ Architecture
+        </h2>
+
+        <p>{{ temple.architecture }}</p>
+
+    </div>
+
+</section>
+
+<section class="max-w-6xl mx-auto mb-10 bg-white rounded-xl shadow-lg p-8">
+
+    <h2 class="text-2xl font-bold text-orange-700 mb-4">
+
+        💡 Interesting Facts
+
+    </h2>
+
+    <p>{{ temple.facts }}</p>
+
+</section>
+
+<!-- ================= REVIEWS ================= -->
+
+<section class="max-w-6xl mx-auto mb-20">
+
+    <div class="bg-white rounded-2xl shadow-xl p-8">
+
+        <h2 class="text-3xl font-bold text-orange-700 mb-6">
+
+            ⭐ Devotee Reviews
+
+        </h2>
+
+        {% if messages %}
+
+            {% for message in messages %}
+
+                <div class="mb-5 bg-green-100 text-green-700 p-4 rounded-lg">
+
+                    {{ message }}
+
+                </div>
+
+            {% endfor %}
+
+        {% endif %}
+
+        <!-- Review Form -->
+
+        <form method="POST">
+
+            {% csrf_token %}
+
+            <div class="space-y-5">
+
+                {{ form.as_p }}
+
+            </div>
+
+            <button
+                type="submit"
+                class="mt-6 bg-orange-600 hover:bg-orange-700 text-white px-8 py-3 rounded-xl font-bold">
+
+                Submit Review
+
+            </button>
+
+        </form>
+
+        <hr class="my-8">
+
+        <!-- Existing Reviews -->
+
+        {% if reviews %}
+
+            {% for review in reviews %}
+
+                <div class="border rounded-xl p-5 mb-5 shadow-sm">
+
+                    <div class="flex justify-between items-center">
+
+                        <h3 class="font-bold text-lg">
+
+                            👤 {{ review.username }}
+
+                        </h3>
+
+                        <span class="text-yellow-500 font-bold">
+
+                            {{ review.rating }}/5 ⭐
+
+                        </span>
+
+                    </div>
+
+                    <p class="text-gray-500 text-sm mt-1">
+
+                        {{ review.created_at }}
+
+                    </p>
+
+                    <p class="mt-4">
+
+                        {{ review.review }}
+
+                    </p>
+
+                </div>
+
+            {% endfor %}
+
+        {% else %}
+
+            <p class="text-gray-500">
+
+                No reviews yet. Be the first devotee to write one.
+
+            </p>
+
+        {% endif %}
+
+    </div>
+
+</section>
+
+</body>
+</html>
