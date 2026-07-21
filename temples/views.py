@@ -138,7 +138,7 @@ def add_temple(request):
 
     return render(
         request,
-        "addTemple.html",
+        "addtemple.html",
         {
             "form": form
         }
